@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Koa 路由 koa-router - 简明教程</title>
+    <link rel="icon" href="https://www.jmjc.tech/public/favicon.ico">
+
+    <link href="https://lib.baomitu.com/twitter-bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://www.jmjc.tech/public/home/css/less-more.css?v=1.01" rel="stylesheet">
+    <script type="text/javascript">
+        if (navigator.platform === 'MacIntel') {
+            document.writeln(`<link href="https://www.jmjc.tech/public/home/css/atom-one-light.css"rel="stylesheet">`);
+        } else {
+            document.writeln(`<link href="https://www.jmjc.tech/public/home/css/github-gist.css"rel="stylesheet">`);
+        }
+    </script>
+    <script src="https://lib.baomitu.com/jquery/2.2.4/jquery.min.js"></script>
+    <script src="https://lib.baomitu.com/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://www.jmjc.tech/public/home/js/less-more.js?v=1.02"></script>
+    <script src="https://lib.baomitu.com/highlight.js/9.13.1/highlight.min.js"></script>
+    <script>
+        hljs.initHighlightingOnLoad();
+    </script>
+
+    <!-- <script async src="//pagead2.googlesyndication.com/
+pagead/js/adsbygoogle.js"></script>
+<script>
+(adsbygoogle = window.adsbygoogle || []).push({
+google_ad_client: "pub-2103074997932853",
+enable_page_level_ads: true
+});
+</script> -->
+</head>
+
+<body style="overflow-y: scroll;">
+
+    <!-- HEADER -->
+    <nav class="navbar navbar-fixed-top navbar-inverse">
+        <div class="container-fluid">
+            <!-- fluid -->
+            <div class="navbar-header">
+                <a href="/" class="logo">简明教程</a>
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+		<span class="sr-only">Toggle navigation</span>
+		<span class="icon-bar"></span>
+		<span class="icon-bar"></span>
+		<span class="icon-bar"></span>
+		</button>
+            </div>
+            <div id="navbar" class="collapse navbar-collapse">
+                <ul class="nav navbar-nav">
+                    <li><a href="/">首页</a></li>
+                    <li><a target=_blank href="/">反馈</a></li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li class="login">
+                        <img class="dropdown-toggle" data-toggle="dropdown" role="button" src="/public/home/img/more.png">
+                        <ul class="dropdown-menu high">
+                            <li><a href="/less/1">HTML5 教程</a></li>
+                            <li><a href="/less/14">CSS3 教程</a></li>
+                            <li><a href="/less/34">JavaScript 教程</a></li>
+                            <li><a href="/less/85">JQuery 教程</a></li>
+                            <li><a href="/less/93">React 教程</a></li>
+                            <li><a href="/less/104">Node.js 教程</a></li>
+                            <li><a href="/less/116">Koa 教程</a></li>
+                            <li role="separator" class="divider"></li>
+                            <li><a href="/tutorial/python/1">Python 教程</a></li>
+                            <li role="separator" class="divider"></li>
+                            <li><a href="/less/126">Linux 教程</a></li>
+                            <li role="separator" class="divider"></li>
+                            <li><a href="/z">更多</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN -->
+    <div class="container-fluid main" style="position: relative;">
+        <!-- fluid -->
+
+
+        <!-- left 容器 | 针对 主内容和主菜单 -->
+        <div class="left_container">
+            <!-- 主内容 -->
+            <div class="right">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h1 class="panel-title">Koa 路由</h1>
+                    </div>
+                    <div class="panel-body">
+                        <h2>路由</h2>
+                        <p>我们第一步需要做的，就是将具体的访问路径，指向特定的功能模块，这是路由的工作。</p>
+                        <pre class="hljs"><code class="javascript">const koa = require('koa2')
+const app = new koa()
+
+app.use(async (ctx, next) => {
+    if (ctx.request.path === '/') { // 首页
+      ctx.response.status = 200
+      ctx.response.body = 'index'
+    } else if (ctx.request.path === '/list') { // 列表页
+      ctx.response.status = 200
+      ctx.response.body = 'list'
+    } else {
+    	ctx.throw(404, 'Not found') // 404
+    }
+  await next()
+})
+
+app.listen(3000)</code></pre>
+                        <p>当然了，我们可以根据 <code>ctx.request.path</code> 这样一直的判断下去，但是这样是很繁琐的。类似这样繁琐的工作，已经有人封装成特定的插件共享到社区，解决我们这个问题的模块，叫做 <code>koa-router</code>，接下来我们引入它。</p>
+                        <hr>
+
+                        <h2>koa-router</h2>
+                        <p>这是一个路由管理模块，我们新建一个目录 <code>urls</code> 存放我们的控制器，然后这些控制器通过 <code>app.js</code> 的 <code>koa-router</code> 模块加载。</p>
+                        <p><code>app.js</code></p>
+                        <pre class="hljs"><code class="javascript">// 路由模块使用前需要先安装和实例化
+const Router = require('koa-router')
+const router = new Router()
+
+// 首页
+app.use(async (ctx, next) => {
+    if (ctx.request.path === '/') {
+      ctx.response.status = 200
+      ctx.response.body = 'index'
+    }
+    await next()
+})
+
+// 其他页面通过 router 加载
+let urls = fs.readdirSync(__dirname + '/urls')
+urls.forEach((element) => {
+    let module = require(__dirname + '/urls/' + element)
+    /*
+      urls 下面的每个文件负责一个特定的功能，分开管理
+      通过 fs.readdirSync 读取 urls 目录下的所有文件名，挂载到 router 上面
+    */
+    router.use('/' + element.replace('.js', ''), module.routes(), module.allowedMethods())
+})
+app.use(router.routes())</code></pre>
+                        <hr>
+                        <p><code>urls/home.js</code></p>
+                        <pre class="hljs"><code class="javascript">const Router = require('koa-router')
+const home = new Router()
+
+// /home
+home.get('/', async (ctx, next) => {
+    ctx.response.status = 200
+    ctx.response.body = 'home'
+    await next()
+})
+
+// home/list
+home.get('/list', async (ctx, next) => {
+    ctx.response.status = 200
+    ctx.response.body = 'home-list'
+    await next()
+})
+
+module.exports = home</code></pre></div>
+                    <div class="panel-footer">
+
+                        <span class="date">
+						<!-- 导入旧版 to publish -->
+						
+						publish
+						
+						: 10/30/2018, 3:08:28 PM / by: jmjc.tech
+					</span>
+                    </div>
+                </div>
+
+                <!-- 补充阅读下的相关阅读 -->
+
+
+                <!-- 补充阅读 -->
+
+
+
+            </div>
+
+            <!-- 主菜单 -->
+            <div class="left">
+
+
+                <a href="/less/116" class="list-group-item active">Koa 教程</a>
+
+
+
+
+                <a href="/less/117" class="list-group-item">Koa 入门</a>
+
+
+
+
+
+                <a href="/less/118" class="list-group-item">Koa HTTP</a>
+
+
+
+
+
+                <a href="/less/119" class="list-group-item">Koa 开发框架</a>
+
+
+
+
+
+                <a href="/less/120" class="list-group-item">Koa 路由</a>
+
+
+
+
+
+                <a href="/less/121" class="list-group-item">Koa 静态文件</a>
+
+
+
+
+
+                <a href="/less/122" class="list-group-item">Koa bodyparser</a>
+
+
+
+
+
+                <a href="/less/123" class="list-group-item">Koa 视图</a>
+
+
+
+
+
+                <a href="/less/124" class="list-group-item">Koa 数据库</a>
+
+
+
+
+
+                <a href="/less/125" class="list-group-item">Koa 记录日志</a>
+
+
+
+                <!-- ad 270_225 -->
+                <div class="list-group-item ad_pc" style="height: auto; padding: 4px;">
+                    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+                    <ins class="adsbygoogle" style="display:inline-block;width:270px;height:225px" data-ad-client="ca-pub-2103074997932853" data-ad-slot="7927122218"></ins>
+                    <script>
+                        (adsbygoogle = window.adsbygoogle || []).push({});
+                    </script>
+                </div>
+
+
+                <!-- 270_540 -->
+                <div class="list-group-item ad_pc" style="height: auto; padding: 4px;">
+                    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+                    <ins class="adsbygoogle" style="display:inline-block;width:270px;height:540px" data-ad-client="ca-pub-2103074997932853" data-ad-slot="7927122218"></ins>
+                    <script>
+                        (adsbygoogle = window.adsbygoogle || []).push({});
+                    </script>
+                </div>
+
+
+            </div>
+        </div>
+
+        <!-- 次菜单 -->
+        <div class="jmjcMeun">
+            <a href="javascript: void(0)" class="list-group-item active"><b>更多教程</b></a>
+            <a href="/less/1" class="list-group-item">HTML5 教程</a>
+            <a href="/less/14" class="list-group-item">CSS3 教程</a>
+            <a href="/less/34" class="list-group-item">JavaScript 教程</a>
+            <a href="/less/85" class="list-group-item">JQuery 教程</a>
+            <a href="/less/93" class="list-group-item">React.js 教程</a>
+            <a href="/less/104" class="list-group-item">Node.js 教程</a>
+            <a href="/less/116" class="list-group-item">Koa2 教程</a>
+            <a href="/tutorial/python/1" class="list-group-item">Python 教程</a>
+            <a href="/less/126" class="list-group-item">Linux 教程</a>
+
+            <!-- ad 140_525 -->
+            <div class="list-group-item ad_pc" style="height: auto; padding: 4px;">
+                <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+                <ins class="adsbygoogle" style="display:inline-block;width:140px;height:525px" data-ad-client="ca-pub-2103074997932853" data-ad-slot="4535506267"></ins>
+                <script>
+                    (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
+            </div>
+
+
+        </div>
+
+
+
+        <!-- FOOTER -->
+        <hr style="clear: both;">
+        <footer>
+            <p style="font-size: 13px;">&copy; 版权所有 禁止转载 / <a href="http://beian.miit.gov.cn/" style="color: #333;">粤ICP备18039792号</a> / 粤公网安备 44050702000802号<a href="#" style="float: right;">返回顶部</a></p>
+        </footer>
+    </div>
+
+</body>
+
+</html>
+<script>
+    var _hmt = _hmt || [];
+    (function() {
+        var hm = document.createElement("script");
+        hm.src = "https://hm.baidu.com/hm.js?bf08a4eb5b9e0e4c0b8fb882884dccd3";
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(hm, s);
+    })();
+</script>
